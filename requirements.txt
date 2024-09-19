@@ -1,3 +1,4 @@
+django==5.1.1
 async-generator==1.10
 attrs==21.4.0
 beautifulsoup4==4.10.0

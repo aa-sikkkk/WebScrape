@@ -13,6 +13,7 @@ WebScrape is a simple yet powerful Python-based web scraping tool that allows us
 - Displays existing scraped websites in a user-friendly table format.
 - Allows alias names for websites to manage and store scraped data.
 - Handles multiple websites and retains a history of scrapes.
+- Web Version as well as CLI Version is available.
 
 ## Google Collab
 You can find the google notebook from: [link](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing)
@@ -41,7 +42,8 @@ python scrap.py
 ##
 Data Storage
 
-![1_poXvWu--59Gd64sRktAQGQ](https://github.com/user-attachments/assets/15011f46-de61-487c-85b2-c433c433b9a5)
+
+
 
 
 ```
@@ -67,8 +69,14 @@ Data Storage
 
 ```
 
+## Web Version of the Project.
+The Project is powered by Django for web version.
+
+![Screenshot 2024-09-18 120647](https://github.com/user-attachments/assets/389721fb-4a19-4c0c-9c90-e0dbab49c959)
+![Screenshot 2024-09-18 120628](https://github.com/user-attachments/assets/06ec5a10-7210-4e00-b9c3-5c8a749048b5)
+
 ## License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the MIT [License](LICENSE). See the LICENSE file for more details.
 
 ## Contributing
 Feel free to fork the project and submit pull requests! If you encounter any issues, you can open an issue on the repository.

@@ -1,5 +1,5 @@
 <p align="center">
-   <img height=200 width=200 src="https://github.com/user-attachments/assets/da6e866b-fab6-435c-b860-aed5c13b8984"/>
+   <img  src="https://github.com/user-attachments/assets/da6e866b-fab6-435c-b860-aed5c13b8984"/>
    </br>
    <a href="https://github.com/aa-sikkkk/WebScrape/pulls">
        <img src="https://img.shields.io/github/issues-pr/aa-sikkkk/WebScrape" alt="Pull Requests"/>

@@ -35,7 +35,7 @@ WebScrape is a simple yet powerful Python-based web scraping tool that allows us
 - Displays existing scraped websites in a user-friendly table format.
 - Allows alias names for websites to manage and store scraped data.
 - Handles multiple websites and retains a history of scrapes.
-- Web Version as well as CLI Version is available.
+- Web Version as well as CLI(With Ollama Integration) Version is available.
 
 ## [📔 Google Collab](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing)
 You can use WebScrape on [Google Colab](https://colab.research.google.com/) **for free**. The project is using Llama model using hugging face for data parsing. if you don't have a powerful GPU of your own. You can borrow a powerful GPU (Tesla K80, T4, P4, or P100) on Google's server for free for a maximum of 12 hours per session. **Please use the free resource fairly** and do not create sessions back-to-back and run upscaling 24/7. This might result in you getting banned. You can get [Colab Pro/Pro+](https://colab.research.google.com/signup/pricing) if you'd like to use better GPUs and get longer runtimes. Usage instructions are embedded in the [Colab Notebook](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing). Check out the [wiki page.](https://github.com/aa-sikkkk/WebScrape/wiki)

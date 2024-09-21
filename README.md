@@ -1,5 +1,27 @@
-# WebScrape
-WebScrape is a simple yet powerful Python-based web scraping tool that allows users to extract and store website data, including titles, anchor tags, images, headings, and paragraphs. The scraped data is stored in a JSON file and can be viewed in a tabular format using the `BeautifulTable` library.
+<p align="center">
+   <img  src="https://github.com/user-attachments/assets/da6e866b-fab6-435c-b860-aed5c13b8984"/>
+   </br>
+   <a href="https://github.com/aa-sikkkk/WebScrape/pulls">
+       <img src="https://img.shields.io/github/issues-pr/aa-sikkkk/WebScrape" alt="Pull Requests"/>
+   </a>
+   <a href="https://github.com/aa-sikkkk/WebScrape/stargazers">
+       <img src="https://img.shields.io/github/stars/aa-sikkkk/WebScrape" alt="Stars"/>
+   </a>
+   <a href="https://github.com/aa-sikkkk/WebScrape/releases">
+       <img src="https://img.shields.io/github/downloads/aa-sikkkk/WebScrape/total" alt="Downloads"/>
+   </a>
+   <a href="https://github.com/aa-sikkkk/WebScrape/issues">
+       <img src="https://img.shields.io/github/issues/aa-sikkkk/WebScrape" alt="Issues"/>
+   </a>
+   <a href="https://github.com/aa-sikkkk/WebScrape/blob/main/LICENSE">
+       <img src="https://img.shields.io/github/license/aa-sikkkk/WebScrape" alt="License"/>
+   </a>
+</p>
+
+
+
+WebScrape is a simple yet powerful Python-based web scraping tool that allows users to extract and store website data, including titles, anchor tags, images, headings, and paragraphs. The scraped data is stored in a JSON file and can be viewed in a tabular format using the `BeautifulTable` library
+
 
 ## Features
 
@@ -15,8 +37,8 @@ WebScrape is a simple yet powerful Python-based web scraping tool that allows us
 - Handles multiple websites and retains a history of scrapes.
 - Web Version as well as CLI Version is available.
 
-## Google Collab
-You can find the google notebook from: [link](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing)
+## [📔 Google Collab](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing)
+You can use WebScrape on [Google Colab](https://colab.research.google.com/) **for free**. The project is using Llama model using hugging face for data parsing. if you don't have a powerful GPU of your own. You can borrow a powerful GPU (Tesla K80, T4, P4, or P100) on Google's server for free for a maximum of 12 hours per session. **Please use the free resource fairly** and do not create sessions back-to-back and run upscaling 24/7. This might result in you getting banned. You can get [Colab Pro/Pro+](https://colab.research.google.com/signup/pricing) if you'd like to use better GPUs and get longer runtimes. Usage instructions are embedded in the [Colab Notebook](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing). Check out the [wiki page.](https://github.com/aa-sikkkk/WebScrape/wiki)
 
 ## Requirements
 

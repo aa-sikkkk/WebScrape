@@ -9,6 +9,7 @@ import json
 
 def home(request):
     return render(request, 'scrape.html')
+
 def scrape_website_view(request):
     if request.method == "POST":
         url = request.POST.get('url')
@@ -49,6 +50,10 @@ def scrape_website_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return render(request, 'scrape.html')
+
+def list_scraped_websites(request):
+    scraped_data = ScrapedData.objects.all()
+    return render(request, 'list.html', {'scraped_data': scraped_data})
 
 def parse_content_view(request):
     if request.method == "POST":

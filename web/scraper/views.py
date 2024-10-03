@@ -6,6 +6,7 @@ from .models import ScrapedData
 from .scrape import scrape_website, extract_body_content, clean_body_content, split_dom_content
 from .parse import parse_with_ollama
 import json
+from django.http import Http404
 
 def home(request):
     return render(request, 'scrape.html')
@@ -71,3 +72,30 @@ def parse_content_view(request):
         return JsonResponse({'parsed_result': parsed_result})
 
     return render(request, 'scrape.html')  # Render the form page if GET request
+
+def download_json(request, alias):
+    try:
+        # Retrieve the scraped data instance by alias
+        scraped_data = ScrapedData.objects.get(alias=alias)
+        
+        # Prepare the data to be sent in the response
+        data = {
+            'alias': scraped_data.alias,
+            'url': scraped_data.url,
+            'title': scraped_data.title,
+            'scraped_at': scraped_data.scraped_at.isoformat(),  # Convert datetime to ISO format
+            'status': scraped_data.status,
+            'domain': scraped_data.domain,
+            'all_anchor_href': json.loads(scraped_data.all_anchor_href),
+            'all_anchors': json.loads(scraped_data.all_anchors),
+            'all_images_data': json.loads(scraped_data.all_images_data),
+            'all_images_source_data': json.loads(scraped_data.all_images_source_data),
+            'all_h1_data': json.loads(scraped_data.all_h1_data),
+            'all_h2_data': json.loads(scraped_data.all_h2_data),
+            'all_h3_data': json.loads(scraped_data.all_h3_data),
+            'all_p_data': json.loads(scraped_data.all_p_data),
+        }
+        
+        return JsonResponse(data)
+    except ScrapedData.DoesNotExist:
+        raise Http404("Scraped data not found.")

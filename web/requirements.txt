@@ -23,3 +23,4 @@ trio-websocket==0.9.2
 urllib3==1.26.8
 wcwidth==0.2.5
 wsproto==1.1.0
+langchain-ollama==0.2.0

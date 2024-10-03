@@ -24,3 +24,4 @@ urllib3==1.26.8
 wcwidth==0.2.5
 wsproto==1.1.0
 html5lib==1.1
+langchain-ollama==0.2.0

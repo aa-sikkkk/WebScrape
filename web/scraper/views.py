@@ -7,6 +7,8 @@ from .scrape import scrape_website, extract_body_content, clean_body_content, sp
 from .parse import parse_with_ollama
 import json
 
+def home(request):
+    return render(request, 'scrape.html')
 def scrape_website_view(request):
     if request.method == "POST":
         url = request.POST.get('url')

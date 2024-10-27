@@ -92,17 +92,13 @@ Data Storage
 ```
 
 ## Web Version of the Project.
-The Project is powered by Django for web version.
+The Project is powered by Streamlit for web version.
 
-![Screenshot 2024-09-18 120647](https://github.com/user-attachments/assets/389721fb-4a19-4c0c-9c90-e0dbab49c959)
-![Screenshot 2024-09-18 120628](https://github.com/user-attachments/assets/06ec5a10-7210-4e00-b9c3-5c8a749048b5)
+![Screenshot (125)](https://github.com/user-attachments/assets/daf97dab-6461-4bc3-9418-6fba4dc9c5b5)
+
 
 ## License
 This project is licensed under the MIT [License](LICENSE). See the LICENSE file for more details.
 
 ## Contributing
 Feel free to fork the project and submit pull requests! If you encounter any issues, you can open an issue on the repository.
-
-## Acknowledgements
-BeautifulSoup - For HTML parsing.
-BeautifulTable - For displaying data in a table format.

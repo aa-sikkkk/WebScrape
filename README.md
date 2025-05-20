@@ -49,11 +49,11 @@ WebScrape is a powerful Python-based web scraping tool that combines traditional
 - Caching system for improved performance
 - Unique alias system for data organization
 
-### Command Line Interface
-- Interactive CLI with clear menu options
+### User Interface
+- Command-line interface (CLI)
+- Web interface powered by Django
+- Interactive data visualization
 - Progress tracking and feedback
-- Easy-to-use commands
-- Comprehensive error handling
 
 ## 🚀 Getting Started
 
@@ -117,6 +117,13 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
 }
 ```
 
+## 🌐 Web Interface
+
+The project includes a Django-powered web interface for easier interaction:
+
+![Web Interface Screenshot 1](https://github.com/user-attachments/assets/389721fb-4a19-4c0c-9c90-e0dbab49c959)
+![Web Interface Screenshot 2](https://github.com/user-attachments/assets/06ec5a10-7210-4e00-b9c3-5c8a749048b5)
+
 ## 🤝 Contributing
 
 We welcome contributions! Please feel free to:
@@ -134,4 +141,5 @@ This project is licensed under the MIT [License](LICENSE). See the LICENSE file 
 - BeautifulSoup - HTML parsing
 - BeautifulTable - Data display
 - Hugging Face - AI models
+- Django - Web framework
 - All contributors and users of the project

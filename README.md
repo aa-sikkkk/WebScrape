@@ -18,57 +18,79 @@
    </a>
 </p>
 
+# WebScrape
 
+WebScrape is a powerful Python-based web scraping tool that combines traditional web scraping with AI-powered content parsing. It allows users to extract, analyze, and visualize website data with advanced features for data processing and storage.
 
-WebScrape is a simple yet powerful Python-based web scraping tool that allows users to extract and store website data, including titles, anchor tags, images, headings, and paragraphs. The scraped data is stored in a JSON file and can be viewed in a tabular format using the `BeautifulTable` library
+## 🌟 Features
 
+### Core Scraping Features
+- Extract comprehensive website data:
+  - Title and metadata
+  - Anchor tags and links
+  - Images and their sources
+  - Headings (H1, H2, H3)
+  - Paragraphs and text content
+  - Custom content based on user queries
 
-## Features
+### AI Integration
+- AI-powered content parsing using:
+  - Hugging Face models (OPT-1.3B/350M)
+  - Customizable queries for targeted extraction
+  - Intelligent content analysis and structuring
+  - Context-aware information extraction
 
-- Scrape web pages to extract:
-  - Title
-  - Anchor tags (`<a>`)
-  - Images (`<img>`)
-  - Headings (`<h1>`, `<h2>`, `<h3>`)
-  - Paragraphs (`<p>`)
-- Stores scraped data in a JSON file for future use.
-- Displays existing scraped websites in a user-friendly table format.
-- Allows alias names for websites to manage and store scraped data.
-- Handles multiple websites and retains a history of scrapes.
-- Web Version as well as CLI(With Ollama Integration) Version is available.
+### Data Management
+- Multiple storage formats:
+  - JSON for structured data storage
+  - CSV for spreadsheet compatibility
+  - Excel for advanced data analysis
+- Data visualization capabilities
+- Caching system for improved performance
+- Unique alias system for data organization
 
-## [📔 Google Collab](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing)
-You can use WebScrape on [Google Colab](https://colab.research.google.com/) **for free**. The project is using Llama model using hugging face for data parsing. if you don't have a powerful GPU of your own. You can borrow a powerful GPU (Tesla K80, T4, P4, or P100) on Google's server for free for a maximum of 12 hours per session. **Please use the free resource fairly** and do not create sessions back-to-back and run upscaling 24/7. This might result in you getting banned. You can get [Colab Pro/Pro+](https://colab.research.google.com/signup/pricing) if you'd like to use better GPUs and get longer runtimes. Usage instructions are embedded in the [Colab Notebook](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing). Check out the [wiki page.](https://github.com/aa-sikkkk/WebScrape/wiki)
+### Command Line Interface
+- Interactive CLI with clear menu options
+- Progress tracking and feedback
+- Easy-to-use commands
+- Comprehensive error handling
 
-## Requirements
+## 🚀 Getting Started
 
-- Python 
-- `requests` - For making HTTP requests.
-- `beautifulsoup4` - For parsing the HTML.
-- `lxml` - A fast XML and HTML parser.
-- `beautifultable` - For displaying scraped data in a table.
+### Prerequisites
+- Python 3.7+
+- Git
+- (Optional) Hugging Face token for AI features
 
-Install the dependencies using the following command:
+### Installation
+
+1. Clone the repository:
 ```bash
 git clone https://github.com/aa-sikkkk/WebScrape.git
 cd WebScrape
 ```
 
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-```bash 
-python scrap.py
+
+3. Run the scraper:
+```bash
+python web_scraper_notebook.py
 ```
 
-##
-Data Storage
+### Using Google Colab
+You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/1t03WODhStp3oYeFthi4r9gZuNXCR31lE?usp=sharing) for free. The project uses Hugging Face models for data parsing.
 
+**Note:** Please use the free resources responsibly:
+- Maximum 12 hours per session
+- Avoid creating back-to-back sessions
+- Consider [Colab Pro/Pro+](https://colab.research.google.com/signup/pricing) for better GPUs and longer runtimes
 
+## 📊 Data Structure
 
-
-
-```
+```json
 {
     "scraped_data": {
         "alias_name": {
@@ -84,25 +106,32 @@ Data Storage
             "all_p_data": [...],
             "scraped_at": "dd/mm/yyyy hh:mm:ss",
             "status": true,
-            "domain": "example.com"
+            "domain": "example.com",
+            "ai_parsed_data": {
+                "query": "user query",
+                "result": "parsed content",
+                "parsed_at": "timestamp"
+            }
         }
     }
 }
-
 ```
 
-## Web Version of the Project.
-The Project is powered by Django for web version.
+## 🤝 Contributing
 
-![Screenshot 2024-09-18 120647](https://github.com/user-attachments/assets/389721fb-4a19-4c0c-9c90-e0dbab49c959)
-![Screenshot 2024-09-18 120628](https://github.com/user-attachments/assets/06ec5a10-7210-4e00-b9c3-5c8a749048b5)
+We welcome contributions! Please feel free to:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+4. Open issues for bugs or feature requests
 
-## License
-This project is licensed under the MIT [License](LICENSE). See the LICENSE file for more details.
+## 📝 License
 
-## Contributing
-Feel free to fork the project and submit pull requests! If you encounter any issues, you can open an issue on the repository.
+This project is licensed under the MIT [License](LICENSE). See the LICENSE file for details.
 
-## Acknowledgements
-BeautifulSoup - For HTML parsing.
-BeautifulTable - For displaying data in a table format.
+## 🙏 Acknowledgements
+
+- BeautifulSoup - HTML parsing
+- BeautifulTable - Data display
+- Hugging Face - AI models
+- All contributors and users of the project

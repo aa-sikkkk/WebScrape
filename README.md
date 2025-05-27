@@ -22,6 +22,9 @@
 
 WebScrape is a powerful Python-based web scraping tool that combines traditional web scraping with AI-powered content parsing. It allows users to extract, analyze, and visualize website data with advanced features for data processing and storage.
 
+![web_scrapper-ipynb-Colab-05-27-2025_10_06_PM](https://github.com/user-attachments/assets/84be3de3-110d-4d45-9941-bbd73db5d31f)
+
+
 ## 🌟 Features
 
 ### Core Scraping Features
@@ -87,29 +90,8 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
 
 ## 📊 Data Structure
 
-```json
-{
-    "scraped_data": {
-        "alias_name": {
-            "url": "http://example.com",
-            "title": "Example Website",
-            "all_anchor_href": [..],
-            "all_anchors": [...],
-            "all_images_data": [...],
-            "all_images_source_data": [...],
-            "all_h1_data": [...],
-            "all_h2_data": [...],
-            "all_h3_data": [...],
-            "all_p_data": [...],
-            "scraped_at": "dd/mm/yyyy hh:mm: ss",
-            "status": true,
-            "domain": "example.com",
-            "summary": "...",  // summary of the main article (if requested)
-            "sentiment": "..." // sentiment analysis result (if requested)
-        }
-    }
-}
-```
+![Screenshot (106)](https://github.com/user-attachments/assets/75416ee1-df77-4a96-9aaf-9f705ba1d540)
+
 
 - All data is stored in `scraped_data.json`.
 - Each website's data is accessible by its alias (e.g., `medium`, `wikipedia`, etc.).

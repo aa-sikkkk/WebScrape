@@ -1,6 +1,6 @@
 #V1.1
 # import required modules 
-
+# This doesn't have the LLM for Sentiment and Summarization, it only parses the whole Content.
 import json 
 import requests
 from datetime import datetime

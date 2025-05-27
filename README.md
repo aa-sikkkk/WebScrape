@@ -49,7 +49,6 @@ WebScrape is a powerful Python-based web scraping tool that combines traditional
 
 ### User Interface
 - Command-line interface (CLI)
-- Web interface powered by Django
 - Interactive data visualization
 - Progress tracking and feedback
 
@@ -94,7 +93,7 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
         "alias_name": {
             "url": "http://example.com",
             "title": "Example Website",
-            "all_anchor_href": [...],
+            "all_anchor_href": [..],
             "all_anchors": [...],
             "all_images_data": [...],
             "all_images_source_data": [...],
@@ -102,7 +101,7 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
             "all_h2_data": [...],
             "all_h3_data": [...],
             "all_p_data": [...],
-            "scraped_at": "dd/mm/yyyy hh:mm:ss",
+            "scraped_at": "dd/mm/yyyy hh:mm: ss",
             "status": true,
             "domain": "example.com",
             "summary": "...",  // summary of the main article (if requested)
@@ -114,14 +113,8 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
 
 - All data is stored in `scraped_data.json`.
 - Each website's data is accessible by its alias (e.g., `medium`, `wikipedia`, etc.).
-- No CSV or Excel files are generated; all data management is via JSON for reliability and clarity.
+- All data management is via JSON for reliability and clarity.
 
-## �� Web Interface
-
-The project includes a Django-powered web interface for easier interaction:
-
-![Web Interface Screenshot 1](https://github.com/user-attachments/assets/389721fb-4a19-4c0c-9c90-e0dbab49c959)
-![Web Interface Screenshot 2](https://github.com/user-attachments/assets/06ec5a10-7210-4e00-b9c3-5c8a749048b5)
 
 ## 🤝 Contributing
 

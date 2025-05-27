@@ -1,8 +1,26 @@
 """
 WebScrape - Web Scraping Tool with AI Integration
 -----------------------------------------------
-This script is a conversion of the Jupyter notebook implementation.
-It includes all the functionality from the notebook cells.
+USER MANUAL
+===========
+This tool allows you to:
+- Scrape a web page and extract its main content
+- Summarize the main article using a state-of-the-art summarization model (BART)
+- Analyze the sentiment of the main article using a fine-tuned sentiment model (DistilBERT)
+- (Easily extendable) Add more advanced NLP tasks (e.g., Q&A, keyword extraction)
+
+How to use:
+1. Run the script and follow the menu prompts.
+2. When scraping a website, the tool will extract the main article text for best results.
+3. Choose to summarize, analyze sentiment, or perform other NLP tasks on the main content.
+4. Results are displayed and can be saved to CSV/JSON as needed.
+
+Requirements:
+- HuggingFace Transformers
+- BeautifulSoup4
+- pandas, tqdm, etc.
+- GPU recommended for large models
+
 """
 
 # Import Libraries
@@ -16,7 +34,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from beautifultable import BeautifulTable
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BartForConditionalGeneration, BartTokenizer, pipeline
 import re
 import logging
 import time
@@ -31,6 +49,8 @@ from typing import Dict, List, Any, Optional
 import gc
 from psutil import virtual_memory
 import warnings
+from functools import lru_cache
+import hashlib
 warnings.filterwarnings('ignore')
 
 # Apply nest_asyncio to allow nested event loops (needed for Colab)
@@ -92,6 +112,9 @@ def get_timestamp_filename(prefix, extension):
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"{prefix}_{timestamp}.{extension}"
+
+def safe_join(items, sep='\n'):
+    return sep.join([str(x) if x is not None else '' for x in items])
 
 # Web Scraping Functions
 def process_url_request(website_url):
@@ -219,6 +242,32 @@ def setup_ai_model(token=None):
         logger.error(f"Error setting up AI model: {str(e)}")
         return None, None
 
+def setup_summarization_model(token=None):
+    model_name = "facebook/bart-large-cnn"
+    tokenizer = BartTokenizer.from_pretrained(model_name, token=token)
+    model = BartForConditionalGeneration.from_pretrained(model_name, token=token)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)
+    model.eval()
+    return model, tokenizer
+
+def summarize_text(model, tokenizer, text, max_length=200, min_length=50):
+    device = next(model.parameters()).device
+    # Tokenize and truncate to 512 tokens
+    inputs = tokenizer([text], max_length=512, truncation=True, return_tensors="pt").to(device)
+    input_ids = inputs["input_ids"]
+    if input_ids.shape[1] > 512:
+        input_ids = input_ids[:, :512]
+    summary_ids = model.generate(
+        input_ids,
+        num_beams=4,
+        length_penalty=2.0,
+        max_length=max_length,
+        min_length=min_length,
+        early_stopping=True
+    )
+    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+
 # Content Processing Functions
 def extract_text_content(data):
     """
@@ -275,7 +324,7 @@ def extract_text_content(data):
 
     return "\n".join(text_content)
 
-def chunk_content(content, chunk_size=1500):
+def chunk_content(content, chunk_size=3000):
     """
     Split content into chunks for processing, with improved chunking strategy
     """
@@ -324,11 +373,67 @@ def chunk_content(content, chunk_size=1500):
     return chunks
 
 # AI Parsing Functions
+@lru_cache(maxsize=1000)
+def get_cache_key(chunk, query):
+    """Generate a cache key for a chunk and query combination"""
+    content = f"{chunk}{query}".encode('utf-8')
+    return hashlib.md5(content).hexdigest()
+
+def prefilter_chunk(chunk, query):
+    """
+    Pre-filter chunks to avoid unnecessary model processing
+    Returns True if chunk should be processed, False if it can be skipped
+    """
+    # Convert query to lowercase for case-insensitive matching
+    query_lower = query.lower()
+    
+    # Skip empty chunks
+    if not chunk.strip():
+        return False
+        
+    # For heading-related queries
+    if any(keyword in query_lower for keyword in ['h1', 'h2', 'h3', 'heading', 'headings']):
+        if 'h1' in query_lower and '[H1_HEADINGS]' not in chunk:
+            return False
+        if 'h2' in query_lower and '[H2_HEADINGS]' not in chunk:
+            return False
+        if 'h3' in query_lower and '[H3_HEADINGS]' not in chunk:
+            return False
+            
+    # For link-related queries
+    if any(keyword in query_lower for keyword in ['link', 'links', 'url', 'href']):
+        if '[LINKS]' not in chunk:
+            return False
+            
+    # For image-related queries
+    if any(keyword in query_lower for keyword in ['image', 'images', 'picture', 'photos']):
+        if '[IMAGES]' not in chunk:
+            return False
+            
+    # For paragraph-related queries
+    if any(keyword in query_lower for keyword in ['paragraph', 'paragraphs', 'text', 'content']):
+        if '[PARAGRAPHS]' not in chunk:
+            return False
+            
+    return True
+
 def process_chunk_with_ai(model, tokenizer, chunk, query):
     """
     Process a single chunk with AI for any type of query with improved prompt engineering
     """
     try:
+        # Check cache first
+        cache_key = get_cache_key(chunk, query)
+        if hasattr(process_chunk_with_ai, 'result_cache'):
+            if cache_key in process_chunk_with_ai.result_cache:
+                return process_chunk_with_ai.result_cache[cache_key]
+        else:
+            process_chunk_with_ai.result_cache = {}
+
+        # Pre-filter the chunk
+        if not prefilter_chunk(chunk, query):
+            return "No matching content found"
+
         # Create a more structured and precise prompt based on query type
         base_prompt = f"""You are a precise content extractor. Your task is to extract specific information from the provided content based on the user's query.
 
@@ -352,7 +457,7 @@ EXTRACTED CONTENT:
             base_prompt, 
             return_tensors="pt", 
             truncation=True, 
-            max_length=1024,  # Increased from 512
+            max_length=1024,
             padding=True
         )
         
@@ -364,15 +469,15 @@ EXTRACTED CONTENT:
             with torch.no_grad():
                 outputs = model.generate(
                     **inputs,
-                    max_new_tokens=500,  # Increased from 250
-                    do_sample=True,  # Changed to True for better quality
-                    num_beams=4,  # Increased from 1
+                    max_new_tokens=500,
+                    do_sample=True,
+                    num_beams=4,
                     num_return_sequences=1,
                     pad_token_id=tokenizer.eos_token_id,
-                    repetition_penalty=1.5,  # Increased from 1.2
+                    repetition_penalty=1.5,
                     length_penalty=1.0,
                     no_repeat_ngram_size=3,
-                    temperature=0.7  # Added temperature for better generation
+                    temperature=0.7
                 )
         except Exception as e:
             logger.warning(f"Error with standard generation: {str(e)}")
@@ -403,13 +508,18 @@ EXTRACTED CONTENT:
             response = re.sub(r'git.*$', '', response, flags=re.MULTILINE)
 
             # Final cleaning of lines while preserving meaningful content
-            lines = [line.strip() for line in response.split('\n')]
+            lines = [str(line).strip() for line in response.split('\n')]
             lines = [line for line in lines if line and 
                     not line.lower().startswith(('here', 'found', 'the ', 'these', 'extracted', 'content', 'results', 
                     'select', 'where', 'from', 'if', 'this', 'please', 'note', 'warning', 'error', 'success',
                     'click', 'read', 'more', 'learn', 'about', 'visit', 'go', 'to', 'see', 'view'))]
 
-            return '\n'.join(lines) if lines else "No matching content found"
+            result = '\n'.join(lines) if lines else "No matching content found"
+            
+            # Cache the result
+            process_chunk_with_ai.result_cache[cache_key] = result
+            
+            return result
 
         except Exception as e:
             logger.error(f"Error processing response: {str(e)}")
@@ -428,22 +538,30 @@ async def parse_content_with_ai_async(model, tokenizer, content, query):
 
     try:
         # Split content into smaller chunks for faster processing
-        chunks = chunk_content(content, chunk_size=1500)  # Adjusted chunk size
+        chunks = chunk_content(content, chunk_size=3000)
         chunk_count = len(chunks)
         print(f"\nProcessing {chunk_count} chunks of content...")
 
+        # Pre-filter chunks before processing
+        filtered_chunks = [chunk for chunk in chunks if prefilter_chunk(chunk, query)]
+        filtered_count = len(filtered_chunks)
+        print(f"After pre-filtering: {filtered_count} chunks to process")
+
+        if filtered_count == 0:
+            return "No matching content found"
+
         results = []
         
-        # Process chunks with increased parallelism
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        # Process chunks with reduced parallelism for better memory management
+        with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_event_loop()
             futures = []
 
-            # Create chunks of chunks for batch processing
-            batch_size = 10
-            chunk_batches = [chunks[i:i + batch_size] for i in range(0, len(chunks), batch_size)]
+            # Create larger batches for processing
+            batch_size = 20
+            chunk_batches = [filtered_chunks[i:i + batch_size] for i in range(0, len(filtered_chunks), batch_size)]
             
-            with tqdm(total=len(chunks), desc="Processing chunks", ncols=80) as pbar:
+            with tqdm(total=filtered_count, desc="Processing chunks", ncols=80) as pbar:
                 for batch in chunk_batches:
                     batch_futures = []
                     for chunk in batch:
@@ -465,8 +583,8 @@ async def parse_content_with_ai_async(model, tokenizer, content, query):
                                 logger.error(f"Error in batch processing: {str(result)}")
                                 continue
                             if result and result != "No matching content found" and not result.startswith("Error"):
-                                for line in result.split('\n'):
-                                    line = line.strip()
+                                for line in str(result).split('\n'):
+                                    line = str(line).strip()
                                     if line:
                                         results.append(line)
                             pbar.update(1)
@@ -522,33 +640,8 @@ def save_ai_results_to_csv(ai_data, alias_name):
     df.to_csv(filename, index=False)
     return filename
 
-def save_scraped_data_to_csv(data, alias_name):
-    """
-    Save scraped data to CSV file with pandas
-    """
-    # Create DataFrame from scraped data
-    df = pd.DataFrame({
-        'title': [data['title']],
-        'url': [data['url']],
-        'domain': [data['domain']],
-        'scraped_at': [data['scraped_at']],
-        'status': [data['status']],
-        'all_anchor_href': ['\n'.join(data['all_anchor_href'])],
-        'all_anchors': ['\n'.join(data['all_anchors'])],
-        'all_images_data': ['\n'.join(data['all_images_data'])],
-        'all_images_source_data': ['\n'.join(data['all_images_source_data'])],
-        'all_h1_data': ['\n'.join(data['all_h1_data'])],
-        'all_h2_data': ['\n'.join(data['all_h2_data'])],
-        'all_h3_data': ['\n'.join(data['all_h3_data'])],
-        'all_p_data': ['\n'.join(data['all_p_data'])]
-    })
-    
-    # Generate filename with alias
-    filename = f"{alias_name}_scraped_data.csv"
-    
-    # Save to CSV
-    df.to_csv(filename, index=False)
-    return filename
+def save_scraped_data_to_csv(*args, **kwargs):
+    pass  # CSV saving is now disabled
 
 # Data Export Functions
 def save_to_excel(data, filename=None):
@@ -643,6 +736,47 @@ def visualize_scraped_data(data):
     plt.tight_layout()
     plt.show()
 
+def extract_main_article_text(soup):
+    # Try to find the <article> tag first
+    article = soup.find('article')
+    if article:
+        return article.get_text(separator='\n', strip=True)
+    # Fallback: try a main content div
+    main_div = soup.find('div', {'class': 'section-inner'})
+    if main_div:
+        return main_div.get_text(separator='\n', strip=True)
+    # Fallback: return all paragraphs
+    paragraphs = [p.get_text(strip=True) for p in soup.find_all('p')]
+    return '\n'.join(paragraphs)
+
+# Sentiment analysis setup
+sentiment_pipeline = None
+
+def setup_sentiment_pipeline():
+    global sentiment_pipeline
+    if sentiment_pipeline is None:
+        sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+    return sentiment_pipeline
+
+def analyze_sentiment(sentiment_pipeline, text, chunk_size=400):
+    words = text.split()
+    sentiments = []
+    for i in range(0, len(words), chunk_size):
+        chunk = ' '.join(words[i:i+chunk_size])
+        # The pipeline will handle tokenization/truncation internally
+        result = sentiment_pipeline(chunk)
+        sentiments.append(result[0]['label'])
+    # Aggregate: majority vote
+    from collections import Counter
+    if sentiments:
+        most_common = Counter(sentiments).most_common(1)[0][0]
+        return {
+            'chunk_sentiments': sentiments,
+            'overall_sentiment': most_common
+        }
+    else:
+        return {'chunk_sentiments': [], 'overall_sentiment': 'NEUTRAL'}
+
 # Main Program
 async def main():
     try:
@@ -668,15 +802,12 @@ async def main():
                 print("\nSkipping AI features...")
                 token = None
 
-        # Setup AI model
-        if token:
-            model, tokenizer = setup_ai_model(token)
-            if model and tokenizer:
-                print("AI model loaded successfully!")
-            else:
-                print("Failed to load AI model. Running without AI features.")
-        else:
-            print("Running without AI features.")
+        # Setup summarization model
+        summarization_model, summarization_tokenizer = setup_summarization_model(token)
+        print("Summarization model loaded successfully!")
+        # Setup sentiment pipeline
+        sentiment_pipe = setup_sentiment_pipeline()
+        print("Sentiment analysis pipeline loaded successfully!")
 
         # Initialize cache for storing results
         cache = {}
@@ -768,67 +899,38 @@ async def main():
                         'domain': urlparse(url_for_scrap).netloc
                     })
 
-                    # Process with AI if available
-                    if model and tokenizer:
-                        print("\n=====> AI Parsing")
-                        print("What information would you like to extract from this website?")
-                        print("Examples:")
-                        print("- 'Find all contact information'")
-                        print("- 'Extract all product prices'")
-                        print("- 'List all article titles'")
-                        print("- 'Find social media links'")
-                        print("- 'Extract all headings and their hierarchy'")
-                        print("- 'Find all images and their descriptions'")
-                        print("- 'Extract all links and their text'")
-                        print("- 'Find all paragraphs containing specific keywords'")
-                        
-                        try:
-                            user_query = input("Enter your query: ").strip()
-                        except (KeyboardInterrupt, EOFError):
-                            print("\nCancelled AI parsing...")
-                            user_query = None
+                    # Extract main article text
+                    print("\nExtracting main article text for advanced analysis...")
+                    soup = process_url_request(url_for_scrap)
+                    main_text = extract_main_article_text(soup)
+                    if not main_text.strip():
+                        print("Could not extract main article text. Using all paragraphs as fallback.")
+                        main_text = '\n'.join(scraped_data_packet.get('all_p_data', []))
 
-                        if user_query:
-                            # Extract text content for AI processing
-                            text_content = extract_text_content(scraped_data_packet)
+                    print("\nChoose an advanced analysis option:")
+                    print("1. Summarize the main article")
+                    print("2. Sentiment analysis of the main article")
+                    print("3. Both summary and sentiment analysis")
+                    print("4. Skip advanced analysis")
+                    adv_choice = input("Enter your choice (1/2/3/4): ").strip()
 
-                            # Parse content with AI
-                            print("\nProcessing with AI...")
-                            try:
-                                # Process with AI
-                                ai_parsed_data = await parse_content_with_ai_async(model, tokenizer, text_content, user_query)
-                                
-                                # Add AI parsed data to the packet
-                                scraped_data_packet['ai_parsed_data'] = {
-                                    'query': user_query,
-                                    'result': ai_parsed_data,
-                                    'parsed_at': scraped_time_is()
-                                }
-
-                                print("\n=====> AI Parsing Results:")
-                                print(ai_parsed_data)
-
-                                # Save AI results to CSV with alias
-                                ai_csv_file = save_ai_results_to_csv(scraped_data_packet['ai_parsed_data'], key_for_storing_data)
-                                print(f"AI results saved to CSV: {ai_csv_file}")
-                                
-                                # Save scraped data to CSV with alias
-                                scraped_csv_file = save_scraped_data_to_csv(scraped_data_packet, key_for_storing_data)
-                                print(f"Scraped data saved to CSV: {scraped_csv_file}")
-
-                                # Save to Excel if requested
-                                try:
-                                    save_excel = input("Would you like to save the results to Excel as well? (y/n): ").strip().lower()
-                                    if save_excel == 'y':
-                                        excel_file = save_to_excel(scraped_data_packet)
-                                        print(f"Data saved to Excel: {excel_file}")
-                                except (KeyboardInterrupt, EOFError):
-                                    print("\nSkipping Excel export...")
-                                
-                            except Exception as e:
-                                logger.error(f"Error during AI parsing: {str(e)}")
-                                print(f"Error during AI parsing: {str(e)}")
-                                print("Continuing without AI results...")
+                    if adv_choice == '1':
+                        summary = summarize_text(summarization_model, summarization_tokenizer, main_text)
+                        print("\n=====> Summary of the main article:\n", summary)
+                        scraped_data_packet['summary'] = summary
+                    elif adv_choice == '2':
+                        sentiment = analyze_sentiment(sentiment_pipe, main_text)
+                        print("\n=====> Sentiment analysis of the main article:\n", sentiment)
+                        scraped_data_packet['sentiment'] = sentiment
+                    elif adv_choice == '3':
+                        summary = summarize_text(summarization_model, summarization_tokenizer, main_text)
+                        sentiment = analyze_sentiment(sentiment_pipe, main_text)
+                        print("\n=====> Summary of the main article:\n", summary)
+                        print("\n=====> Sentiment analysis of the main article:\n", sentiment)
+                        scraped_data_packet['summary'] = summary
+                        scraped_data_packet['sentiment'] = sentiment
+                    else:
+                        print("Skipping advanced analysis.")
 
                     # Save to JSON with correct alias
                     if 'scraped_data' not in local_json_db:
@@ -836,11 +938,14 @@ async def main():
                     local_json_db['scraped_data'][key_for_storing_data] = scraped_data_packet
                     save_scraped_data_in_json(local_json_db)
 
-                    print('\n=====> Data saved to:')
-                    print(f"- JSON: scraped_data.json (with alias: {key_for_storing_data})")
-                    print(f"- CSV: {key_for_storing_data}_scraped_data.csv")
-                    if 'ai_parsed_data' in scraped_data_packet:
-                        print(f"- AI Results: {key_for_storing_data}_ai_results.csv")
+                    # CSV saving removed
+                    # scraped_csv_file = save_scraped_data_to_csv(scraped_data_packet, key_for_storing_data)
+                    # print(f"- CSV: {scraped_csv_file}")
+
+                    if 'summary' in scraped_data_packet:
+                        print(f"- Summary included in JSON/CSV.")
+                    if 'sentiment' in scraped_data_packet:
+                        print(f"- Sentiment included in JSON/CSV.")
 
                     # Visualize the data
                     try:

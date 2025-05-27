@@ -41,11 +41,9 @@ WebScrape is a powerful Python-based web scraping tool that combines traditional
   - Context-aware information extraction
 
 ### Data Management
-- Multiple storage formats:
-  - JSON for structured data storage
-  - CSV for spreadsheet compatibility
-  - Excel for advanced data analysis
-- Data visualization capabilities
+- Structured data storage in JSON format only (CSV/Excel export removed for simplicity and reliability)
+- All scraped data is stored in a single `scraped_data.json` file
+- Each website's data is stored under a unique alias key inside the JSON file
 - Caching system for improved performance
 - Unique alias system for data organization
 
@@ -107,17 +105,18 @@ You can use WebScrape on [Google Colab](https://colab.research.google.com/drive/
             "scraped_at": "dd/mm/yyyy hh:mm:ss",
             "status": true,
             "domain": "example.com",
-            "ai_parsed_data": {
-                "query": "user query",
-                "result": "parsed content",
-                "parsed_at": "timestamp"
-            }
+            "summary": "...",  // summary of the main article (if requested)
+            "sentiment": "..." // sentiment analysis result (if requested)
         }
     }
 }
 ```
 
-## 🌐 Web Interface
+- All data is stored in `scraped_data.json`.
+- Each website's data is accessible by its alias (e.g., `medium`, `wikipedia`, etc.).
+- No CSV or Excel files are generated; all data management is via JSON for reliability and clarity.
+
+## �� Web Interface
 
 The project includes a Django-powered web interface for easier interaction:
 
